@@ -12,7 +12,7 @@ coalesce_join <- function(data.list, by = NULL, suffix = c(".x", ".y"), join = d
   names <- unlist(lapply(temp, function(x){colnames(x)}))
   duplicates <- names[which(duplicated(names))][names[which(duplicated(names))] != by]
   merged.data <- data.list %>%
-    purrr:reduce(join, by = by) %>%
+    purrr::reduce(join, by = by) %>%
     arrange(!! rlang::sym(by))
 
   for (i in duplicates){
