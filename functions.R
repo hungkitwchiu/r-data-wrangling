@@ -14,7 +14,7 @@ coalesce_join <- function(data.list, by = NULL, suffix = c(".x", ".y"), join = d
   merged.data <- data.list %>%
     purrr::reduce(join, by = by)
 
-  if(!is.na(by)){merged.data <- merged.data %>% arrange(!! rlang::sym(by))}
+  if(!is.null(by)){merged.data <- merged.data %>% arrange(!! rlang::sym(by))}
 
   for (i in duplicates){
   co.temp <- unlist(lapply(suffix, function(x){paste0(i, x)}))
