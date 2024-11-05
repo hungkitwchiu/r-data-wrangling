@@ -24,6 +24,14 @@ coalesce_join <- function(data.list, by = NULL, suffix = c(".x", ".y"), join = d
 }
   return(merged.data)
 }
+
+mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage, var.time, time){
+  temp <- data.shape %>%
+    right_join(data.interest[c(linkage, var.interest, var.time)], by = linkage) %>%
+    filter(!!rlang::sym(var.time) == time)
+  mapview(temp, zcol = var.interest)
+}
+
   # coalesce specified items
   #for (i in colnames(co)){
   #  co_temp <- as.vector(co[, i])[!is.na(as.vector(co[, i]))]
