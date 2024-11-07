@@ -46,7 +46,7 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
     treats <- sort(unique(gdat$treat))
     for (exp in exps){
       for (treat in treats){
-        y.label <- mean(unlist(filter(gdat, treat==!!treat, exp==!!exp)[, y.name])) %>% round(1)
+        y.label <- mean(unlist(filter(gdat, treat==!!treat, exp==!!exp)[, y.name])) %>% round(3)
         gg = gg + annotate("label", x=pos.means[exp+1], y=y.label*1.01, label=y.label)
       }
     }
