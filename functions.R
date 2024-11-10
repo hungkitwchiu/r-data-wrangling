@@ -43,7 +43,7 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, jo
     co.vector <- as.vector(as.matrix(co.names))[!is.na(as.vector(as.matrix(co.names)))] # all cells of co.names
     co.vector[which(!co.vector %in% colnames(co.names))] # exclude names of co.names (we want to keep those)
     merged.data <- merged.data %>% 
-      select(-any_of(co_vector))
+      select(-any_of(co.vector))
   }
   
   if(!is.null(arrange.col)){merged.data <- merged.data %>% arrange(!! rlang::sym(arrange.col))}
