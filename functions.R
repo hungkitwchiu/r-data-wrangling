@@ -6,30 +6,49 @@
 pacman::p_load("readxl","data.table","purrr","stringr","dplyr")
 
 # ------------------------------------------------------------------------------
-# Coalesce join, duplicate column names
+# Coalesce join
 # ------------------------------------------------------------------------------
-coalesce.join <- function(data.list, by = NULL, suffix = c(".x", ".y"), join = dplyr::full_join){
-  names <- unlist(lapply(temp, function(x){colnames(x)}))
-  duplicates <- names[which(duplicated(names))][names[which(duplicated(names))] != by]
-  merged.data <- data.list %>%
-    purrr::reduce(join, by = by)
-
-  if(!is.null(by)){merged.data <- merged.data %>% arrange(!! rlang::sym(by))}
-
-  for (i in duplicates){
-  co.temp <- unlist(lapply(suffix, function(x){paste0(i, x)}))
-  merged.data <- merged.data %>%
-    mutate(!!i := coalesce(!!!select(., any_of(co.temp)))) %>%
-    select(-any_of(co.temp))
-}
+coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, join = dplyr::full_join){
+  names <- unlist(lapply(data.list, function(x){colnames(x)}))
+  duplicates <- names[which(duplicated(names))][names[which(duplicated(names))] != id] # check duplicates
+  
+  merged.data <- data.list %>% purrr::reduce(join, by = id)
+  
+  if (!is_empty(duplicates)){ # coalesce duplicated columns, with suffix ".x", ".y", ".x.x", ".y.y" and so on
+    for (i in duplicates){
+      suffix <- na.omit(str_extract(colnames(merged.data), paste0("(?<=", i, ")", ".*\\.[a-z]$")))
+      co.temp <- unlist(lapply(suffix, function(x){paste0(i, x)}))
+        merged.data <- merged.data %>%
+          mutate(!!i := coalesce(!!!select(., any_of(co.temp)))) %>%
+          select(-any_of(co.temp))
+    }
+  }
+  
+  if(!is.null(co.names)){ # further coalesce specific columns passed in co.names
+    for (i in colnames(co.names)){
+      co.temp <- as.vector(co.names[, i])[!is.na(as.vector(co.names[, i]))]
+      print(co.temp)
+      skip.to.next <- FALSE
+      tryCatch(
+      merged.data <- merged.data %>%
+        mutate(!!i := coalesce(!!!select(., any_of(co.temp)))),
+      error = function(e) {
+        cat("ERROR:", conditionMessage(e), "\n")
+        skip.to.next <<- TRUE
+        }
+      )
+      if (skip.to.next){next}
+      
+    }
+    # clean up columns that have been coalesced
+    co.vector <- as.vector(as.matrix(co.names))[!is.na(as.vector(as.matrix(co.names)))] # all cells of co.names
+    co.vector[which(!co.vector %in% colnames(co.names))] # exclude names of co.names (we want to keep those)
+    merged_data <- merged_data %>% 
+      select(-any_of(co_vector))
+  }
+  
+  if(!is.null(arrange.col)){merged.data <- merged.data %>% arrange(!! rlang::sym(arrange.col))}
   return(merged.data)
-}
-
-mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage, var.time, time){
-  temp <- data.shape %>%
-    right_join(data.interest[c(linkage, var.interest, var.time)], by = linkage) %>%
-    filter(!!rlang::sym(var.time) == time)
-  mapview(temp, zcol = var.interest)
 }
 
 show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.means = NULL){
@@ -53,6 +72,25 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
   }
   gg
 }
+
+
+
+  for (i in colnames(co)){
+    co_temp <- as.vector(co[, i])[!is.na(as.vector(co[, i]))]
+    merged_data <- merged_data %>%
+      mutate(!!i := coalesce(!!!select(., any_of(co_temp))))
+  }
+  
+  ncol_before <- ncol(merged_data)
+  
+  # clean up columns
+  co_vector <- as.vector(as.matrix(co))[!is.na(as.vector(as.matrix(co)))]
+  merged_data <- merged_data %>% 
+    select(-any_of(co_vector)) %>%
+    select(cl$identifier, colnames(co), everything())
+  
+  ncol_after <- ncol(merged_data)
+  print(paste("Removed", ncol_before - ncol_after, "columns used in coalesce"))
 
   # coalesce specified items
   #for (i in colnames(co)){
