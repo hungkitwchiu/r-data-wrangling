@@ -73,35 +73,3 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
   gg
 }
 
-
-
-  for (i in colnames(co)){
-    co_temp <- as.vector(co[, i])[!is.na(as.vector(co[, i]))]
-    merged_data <- merged_data %>%
-      mutate(!!i := coalesce(!!!select(., any_of(co_temp))))
-  }
-  
-  ncol_before <- ncol(merged_data)
-  
-  # clean up columns
-  co_vector <- as.vector(as.matrix(co))[!is.na(as.vector(as.matrix(co)))]
-  merged_data <- merged_data %>% 
-    select(-any_of(co_vector)) %>%
-    select(cl$identifier, colnames(co), everything())
-  
-  ncol_after <- ncol(merged_data)
-  print(paste("Removed", ncol_before - ncol_after, "columns used in coalesce"))
-
-  # coalesce specified items
-  #for (i in colnames(co)){
-  #  co_temp <- as.vector(co[, i])[!is.na(as.vector(co[, i]))]
-  #  merged_data <- merged_data %>%
-  #    mutate(!!i := coalesce(!!!select(., any_of(co_temp))))
-  #}
-  
- 
-#co <- data.frame(
-#  company_name = c("Name", "Company Name", "EntityName", NA),
-#  country = c("Country of Headquarters", "Country","cntry_of_incorporation", "HQ Address Country ISO"),
-#  industry = c("Sub_Industry", "Subindustry", NA, NA)
-#)
