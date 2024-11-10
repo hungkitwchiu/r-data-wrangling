@@ -18,35 +18,34 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, jo
     for (i in duplicates){
       suffix <- na.omit(str_extract(colnames(merged.data), paste0("(?<=", i, ")", ".*\\.[a-z]$")))
       co.temp <- unlist(lapply(suffix, function(x){paste0(i, x)}))
-        merged.data <- merged.data %>%
-          mutate(!!i := coalesce(!!!select(., any_of(co.temp)))) %>%
-          select(-any_of(co.temp))
+      merged.data <- merged.data %>%
+        mutate(!!i := coalesce(!!!select(., any_of(co.temp)))) %>%
+        select(-any_of(co.temp))
     }
   }
   
   if(!is.null(co.names)){ # further coalesce specific columns passed in co.names
     for (i in colnames(co.names)){
       co.temp <- as.vector(co.names[, i])[!is.na(as.vector(co.names[, i]))]
-      print(co.temp)
       skip.to.next <- FALSE
       tryCatch(
-      merged.data <- merged.data %>%
-        mutate(!!i := coalesce(!!!select(., any_of(co.temp)))),
-      error = function(e) {
-        cat("ERROR:", conditionMessage(e), "\n")
-        skip.to.next <<- TRUE
+        merged.data <- merged.data %>%
+          mutate(!!i := coalesce(!!!select(., any_of(co.temp)))),
+        error = function(e) {
+          cat("ERROR:", conditionMessage(e), "\n")
+          skip.to.next <<- TRUE
         }
       )
       if (skip.to.next){next}
     }
     # clean up columns that have been coalesced
     co.vector <- as.vector(as.matrix(co.names))[!is.na(as.vector(as.matrix(co.names)))] # all cells of co.names
-    co.vector[which(!co.vector %in% colnames(co.names))] # exclude names of co.names (we want to keep those)
+    co.vector <- co.vector[which(!co.vector %in% colnames(co.names))] # exclude names of co.names (we want to keep those)
     merged.data <- merged.data %>% 
       select(-any_of(co.vector))
   }
   
-  if(!is.null(arrange.col)){merged.data <- merged.data %>% arrange(!! rlang::sym(arrange.col))}
+  if(!is.null(arrange.col)){merged.data <- merged.data %>% arrange(!!rlang::sym(arrange.col))}
   return(merged.data)
 }
 
