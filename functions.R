@@ -8,7 +8,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr")
 # ------------------------------------------------------------------------------
 # Coalesce join
 # ------------------------------------------------------------------------------
-coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, join = dplyr::full_join){
+coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, everything = TRUE, join = dplyr::full_join){
   names <- unlist(lapply(data.list, function(x){colnames(x)}))
   duplicates <- names[which(duplicated(names))][names[which(duplicated(names))] != id] # check duplicates
   
