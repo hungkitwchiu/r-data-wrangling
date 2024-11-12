@@ -80,5 +80,6 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
     }
   }
   gg
+  return(gg)
 }
 
