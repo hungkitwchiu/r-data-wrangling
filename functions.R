@@ -56,7 +56,7 @@ mapview.with.shape.data <- function(data.interest, data.shape, var.interest, lin
   temp <- data.shape %>%
     right_join(data.interest[c(linkage, var.interest, var.time)], by = linkage) %>%
     filter(!!rlang::sym(var.time) == time)
-  mapview(temp, zcol = var.interest)
+  print(mapview(temp, zcol = var.interest))
 }
 
 # ============================================================================================================
