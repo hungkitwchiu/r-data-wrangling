@@ -19,7 +19,7 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
       suffix <- na.omit(str_extract(colnames(merged.data), paste0("(?<=", i, ")", ".*\\.[a-z]$")))
       co.temp <- unlist(lapply(suffix, function(x){paste0(i, x)}))
       merged.data <- merged.data %>%
-        mutate(!!i := coalesce(!!!select(., any_of(co.temp)))) %>%
+        dplyr::mutate(!!i := coalesce(!!!select(., any_of(co.temp)))) %>%
         select(-any_of(co.temp))
     }
   }
@@ -31,7 +31,7 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
       skip.to.next <- FALSE
       tryCatch(
         merged.data <- merged.data %>%
-          mutate(!!i := coalesce(!!!select(., any_of(co.temp)))),
+          dplyr::mutate(!!i := coalesce(!!!select(., any_of(co.temp)))),
         error = function(e) {
           cat("ERROR:", conditionMessage(e), "\n")
           skip.to.next <<- TRUE
@@ -62,7 +62,7 @@ mapview.with.shape.data <- function(data.interest, data.shape, var.interest, lin
 
 # ============================================================================================================
 show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.means = NULL){
-  gdat <- gdat %>% mutate(group = if_else(!!sym(t.name) == 0, "Control", "Treatment")) # supports only 1 treatment and 1 control
+  gdat <- gdat %>% dplyr::mutate(group = if_else(!!sym(t.name) == 0, "Control", "Treatment")) # supports only 1 treatment and 1 control
   gg = ggplot(gdat, aes(y = get(y.name), x = get(x.name), color = group)) +
     geom_line() + 
     theme_bw() +
