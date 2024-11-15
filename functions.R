@@ -23,6 +23,7 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
         select(-any_of(co.temp))
     }
   }
+  print(duplicates)
   
   if(!is.null(co.names)){ # further coalesce specific columns passed in co.names
     for (i in colnames(co.names)){
