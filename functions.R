@@ -52,10 +52,9 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
 }
 
 # ============================================================================================================
-mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage, var.time, time){
+mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage){
   temp <- data.shape %>%
-    right_join(data.interest[c(linkage, var.interest, var.time)], by = linkage) %>%
-    filter(!!rlang::sym(var.time) == time)
+    right_join(data.interest[c(linkage, var.interest)], by = linkage)
   print(mapview(temp, zcol = var.interest))
 }
 
