@@ -56,7 +56,6 @@ mapview.with.shape.data <- function(data.interest, data.shape, var.interest, lin
   temp <- data.shape %>%
     select(-any_of(c("estimate"))) %>%
     right_join(data.interest[, c(linkage, var.interest)], by = join_by(GEOID == !!rlang::sym(linkage)))
-  print(colnames(temp))
   print(mapview(temp, zcol = var.interest))
 }
 
