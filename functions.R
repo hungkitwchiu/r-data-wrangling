@@ -52,7 +52,8 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
 }
 
 # ============================================================================================================
-mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage){ # tested with data.interest as data.table
+mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage){ # tested with data.interest as data.frame
+  data.interest <- as.data.frame(data.interest)
   temp <- data.shape %>%
     select(-any_of(c("estimate"))) %>%
     right_join(data.interest[, c(linkage, var.interest)], by = join_by(GEOID == !!rlang::sym(linkage)))
