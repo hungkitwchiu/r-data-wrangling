@@ -4,6 +4,22 @@
 pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 
 # ------------------------------------------------------------------------------
+# Read file using pattern in directory recursively, default fread
+# pattern can be a character vector with multiple elements
+# return list if multiple files are read, otherwise return single data.table
+# if you want to change default na.strings of fread, consider using formals
+# ------------------------------------------------------------------------------
+wdread <- function(pattern, func = "fread"){
+  files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
+  data <- lapply(files, function(x){
+    cat("Reading...", x, "\n")
+   get(func)(x)
+  })
+  if (length(data) == 1){data = data[[1]]}
+  return(data)
+}
+
+# ------------------------------------------------------------------------------
 # Coalesce join
 # ------------------------------------------------------------------------------
 coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, everything = TRUE, join = dplyr::full_join){
