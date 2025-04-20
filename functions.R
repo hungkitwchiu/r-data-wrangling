@@ -13,7 +13,7 @@ wdread <- function(pattern, func = "fread"){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
-   get(func)(x)
+    if (func == "load"){get(get(func)(x))}else{get(func)(x)}
   })
   if (length(data) == 1){data = data[[1]]}
   return(data)
