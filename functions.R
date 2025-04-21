@@ -66,11 +66,12 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
 }
 
 # ============================================================================================================
-mapview.with.shape.data <- function(data.interest, data.shape, var.interest, link.interest, link.shape){
+mapview.with.shape.data <- function(data.interest, data.shape, var.interest, link.interest, link.shape, return = FALSE){
    temp <- data.shape %>%
      right_join(data.interest %>% select(eval(link.interest), eval(var.interest)), 
                 by = join_by(!!link.shape == !!rlang::sym(link.interest)))
-   print(mapview(temp, zcol = var.interest, layer.name = var.interest))
+   m <- mapview(temp, zcol = var.interest, layer.name = var.interest)
+   if (return){return(m)}else{m}
  }
 
 # ============================================================================================================
