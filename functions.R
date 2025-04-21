@@ -8,6 +8,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # pattern can be a character vector with multiple elements
 # return list if multiple files are read, otherwise return single data.table
 # if you want to change default na.strings of fread, consider using formals
+# also check column names and print groups if not all same or all different
 # ------------------------------------------------------------------------------
 wdread <- function(pattern, func = "fread"){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
@@ -15,7 +16,20 @@ wdread <- function(pattern, func = "fread"){
     cat("Reading...", x, "\n")
     if (func == "load"){get(get(func)(x))}else{get(func)(x)}
   })
-  if (length(data) == 1){data = data[[1]]}
+  
+  # return if only one data is read
+  if (length(data) == 1){return(data[[1]])}
+  
+  # check column names
+  cols <- lapply(data, function(x) paste(sort(names(x)), collapse = ",..,"))
+  cols.unique <- unique(cols)
+  if (length(cols.unique) != 1 & length(cols.unique) != length(cols)){
+    cat("\n", length(cols.unique), "sets of column names among", length(cols) , 
+        "files found. Showing groups... \n")
+    group <- lapply(cols.unique, function(x) which(cols == x))
+    print(lapply(group, function(x) files[x]))
+  }
+  
   return(data)
 }
 
@@ -65,7 +79,9 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
   return(merged.data)
 }
 
-# ============================================================================================================
+# ------------------------------------------------------------------------------
+# mapview with separate data of interest and shape data
+# ------------------------------------------------------------------------------
 mapview.with.shape.data <- function(data.interest, data.shape, var.interest, link.interest, link.shape, return = FALSE){
    temp <- data.shape %>%
      right_join(data.interest %>% select(eval(link.interest), eval(var.interest)), 
