@@ -66,12 +66,12 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
 }
 
 # ============================================================================================================
-mapview.with.shape.data <- function(data.interest, data.shape, var.interest, linkage){ # data.interest can be data.frame or data.table
-  temp <- data.shape %>%
-    select(-any_of(c("estimate"))) %>%
-    right_join(data.interest %>% select(eval(linkage), eval(var.interest)), by = join_by(GEOID == !!rlang::sym(linkage)))
-  print(mapview(temp, zcol = var.interest))
-}
+mapview.with.shape.data <- function(data.interest, data.shape, var.interest, link.interest, link.shape){
+   temp <- data.shape %>%
+     right_join(data.interest %>% select(eval(link.interest), eval(var.interest)), 
+                by = join_by(!!link.shape == !!rlang::sym(link.interest)))
+   print(mapview(temp, zcol = var.interest, layer.name = var.interest))
+ }
 
 # ============================================================================================================
 show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.means = NULL){
