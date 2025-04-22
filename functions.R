@@ -29,7 +29,9 @@ wdread <- function(pattern, func = "fread"){
     group <- lapply(cols.unique, function(x) which(cols == x))
     print(lapply(group, function(x) files[x]))
   }
-  
+
+  # will return error if columns of same names are of different types
+  if (length(cols.unique) == 1){data <- rbindlist(data, use.names = TRUE)}
   return(data)
 }
 
