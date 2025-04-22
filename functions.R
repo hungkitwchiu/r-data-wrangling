@@ -10,7 +10,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # if you want to change default na.strings of fread, consider using formals
 # also check column names and print groups if not all same or all different
 # ------------------------------------------------------------------------------
-wdread <- function(pattern, func = "fread"){
+wdread <- function(pattern, func = "fread", bind = TRUE){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
@@ -29,9 +29,12 @@ wdread <- function(pattern, func = "fread"){
     group <- lapply(cols.unique, function(x) which(cols == x))
     print(lapply(group, function(x) files[x]))
   }
-
-  # will return error if columns of same names are of different types
-  if (length(cols.unique) == 1){data <- rbindlist(data, use.names = TRUE)}
+  
+  if (length(cols.unique) == 1 & bind == TRUE){
+    tryCatch(
+      {data <- rbindlist(data, use.names = TRUE)}, error = function(e){
+        cat(e, "Are columns of the same type? Use bind = FALSE or read separately.")}
+    )}
   return(data)
 }
 
