@@ -32,7 +32,8 @@ wdread <- function(pattern, func = "fread", bind = TRUE){
   
   if (length(cols.unique) == 1 & bind == TRUE){
     tryCatch(
-      {data <- rbindlist(data, use.names = TRUE)}, error = function(e){
+      {data <- rbindlist(data, use.names = TRUE)
+      }, error = function(e){
         cat(e, "Are columns of the same type? Use bind = FALSE or read separately.")}
     )}
   return(data)
@@ -92,7 +93,7 @@ mapview.with.shape.data <- function(data.interest, data.shape, var.interest, lin
      right_join(data.interest %>% select(eval(link.interest), eval(var.interest)), 
                 by = join_by(!!link.shape == !!rlang::sym(link.interest)))
    m <- mapview(temp, zcol = var.interest, layer.name = var.interest)
-   if (return){return(m)}else{m}
+   if (return){return(m)} else {m}
  }
 
 # ============================================================================================================
