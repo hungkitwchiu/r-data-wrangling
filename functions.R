@@ -28,13 +28,14 @@ wdread <- function(pattern, func = "fread", bind = TRUE){
         "files found. Showing groups... \n")
     group <- lapply(cols.unique, function(x) which(cols == x))
     print(lapply(group, function(x) files[x]))
-  }
+  }else if(length(cols.unique) == length(cols){cat("No data sets share common columns")}
   
   if (length(cols.unique) == 1 & bind == TRUE){
     tryCatch(
       {data <- rbindlist(data, use.names = TRUE)
       }, error = function(e){
-        cat(e, "Are columns of the same type? Use bind = FALSE or read separately.")}
+        cat(e, "Column names are all the same, but are columns of the same type?", 
+            "Set bind = FALSE or read separately.")}
     )}
   return(data)
 }
