@@ -43,13 +43,15 @@ wdread <- function(pattern, func = "fread", bind = TRUE){
 # ------------------------------------------------------------------------------
 # Coalesce join
 # ------------------------------------------------------------------------------
-coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, everything = TRUE, join = dplyr::full_join){
+coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, 
+                          everything = TRUE, join = dplyr::full_join){
   names <- unlist(lapply(data.list, function(x){colnames(x)}))
-  duplicates <- names[which(duplicated(names))][names[which(duplicated(names))] != id] # check duplicates
+  duplicates <- names[which(duplicated(names))][names[which(duplicated(names))] != id]
   
   merged.data <- data.list %>% purrr::reduce(join, by = id)
   
-  if (!is_empty(duplicates)){ # coalesce duplicated columns, with suffix ".x", ".y", ".x.x", ".y.y" and so on
+  # coalesce duplicated columns, with suffix ".x", ".y", ".x.x", ".y.y" and so on
+  if (!is_empty(duplicates)){ 
     for (i in duplicates){
       suffix <- na.omit(str_extract(colnames(merged.data), paste0("(?<=", i, ")", ".*\\.[a-z]$")))
       co.temp <- unlist(lapply(suffix, function(x){paste0(i, x)}))
@@ -74,8 +76,10 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
       if (skip.to.next){next}
     }
     # clean up columns that have been coalesced
-    co.vector <- as.vector(as.matrix(co.names))[!is.na(as.vector(as.matrix(co.names)))] # all cells of co.names
-    co.vector <- co.vector[which(!co.vector %in% colnames(co.names))] # exclude names of co.names (we want to keep those)
+    # all cells of co.names
+    co.vector <- as.vector(as.matrix(co.names))[!is.na(as.vector(as.matrix(co.names)))]
+    # exclude names of co.names (we want to keep those)
+    co.vector <- co.vector[which(!co.vector %in% colnames(co.names))] 
     merged.data <- merged.data %>% 
       select(-any_of(co.vector)) %>%
       select(colnames(co.names), everything())
@@ -89,17 +93,20 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL, ev
 # ------------------------------------------------------------------------------
 # mapview with separate data of interest and shape data
 # ------------------------------------------------------------------------------
-mapview.with.shape.data <- function(data.interest, data.shape, var.interest, link.interest, link.shape, return = FALSE){
-   temp <- data.shape %>%
-     right_join(data.interest %>% select(eval(link.interest), eval(var.interest)), 
-                by = join_by(!!link.shape == !!rlang::sym(link.interest)))
-   m <- mapview(temp, zcol = var.interest, layer.name = var.interest)
-   if (return){return(m)} else {m}
- }
+mapview.with.shape.data <- function(data.interest, data.shape, var.interest, 
+                                    link.interest, link.shape, return = FALSE){
+  temp <- data.shape %>%
+    right_join(data.interest %>% select(eval(link.interest), eval(var.interest)), 
+               by = join_by(!!link.shape == !!rlang::sym(link.interest)))
+  m <- mapview(temp, zcol = var.interest, layer.name = var.interest)
+  if (return){return(m)} else {m}
+}
 
-# ============================================================================================================
+# ------------------------------------------------------------------------------
+# did plot, currently with 1 treatment and 1 control
+# ------------------------------------------------------------------------------
 show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.means = NULL){
-  gdat <- gdat %>% dplyr::mutate(group = if_else(!!sym(t.name) == 0, "Control", "Treatment")) # supports only 1 treatment and 1 control
+  gdat <- gdat %>% dplyr::mutate(group = if_else(!!sym(t.name) == 0, "Control", "Treatment"))
   gg = ggplot(gdat, aes(y = get(y.name), x = get(x.name), color = group)) +
     geom_line() + 
     theme_bw() +
@@ -120,4 +127,3 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
   gg
   return(gg)
 }
-
