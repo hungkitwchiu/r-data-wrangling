@@ -20,6 +20,8 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   
   # return if only one data is read
   if (length(data) == 1){return(data[[1]])}
+  # return bind if function is load (and more than 1 data)
+  if (func == "load"){return(rbindlist(data))}
   
   # get column class
   cols <- lapply(data, function(x){
@@ -39,8 +41,8 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
     
     group <- lapply(cols.unique.names, function(x) lapply(cols.names, function(y) identical(x,y)))
     print(lapply(group, function(x) files[unlist(x)]))
-  
-    }else if(length(cols.unique.names) == length(cols)){cat("No data sets share common columns. \n")}
+    
+  }else if(length(cols.unique.names) == length(cols)){cat("No data sets share common columns. \n")}
   
   # bind if names are the same
   if (length(cols.unique.names) == 1 & bind == TRUE){
