@@ -9,6 +9,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # return list if multiple files are read, otherwise return single data.table
 # if you want to change default na.strings of fread, consider using formals
 # also check column names and print groups if not all same or all different
+# if force64 = TRUE, all integer64 columns are coerced into character
 # ------------------------------------------------------------------------------
 wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
