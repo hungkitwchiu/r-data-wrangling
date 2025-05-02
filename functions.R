@@ -21,7 +21,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   # return if only one data is read
   if (length(data) == 1){return(data[[1]])}
   # return bind if function is load (and more than 1 data)
-  if (func == "load"){return(rbindlist(data))}
+  if (func == "load"){return(rbindlist(data, fill = TRUE))}
   
   # get column class
   cols <- lapply(data, function(x){
