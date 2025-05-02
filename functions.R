@@ -55,9 +55,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
     
     tryCatch(
       {data <- rbindlist(data, use.names = TRUE)
-      }, error = function(e){
-        cat(e, "Check column types. Perhaps set force64 = TRUE")
-        }
+      }, error = function(e){cat(e, "Check column types. Perhaps set force64 = TRUE")}
     )}
   return(data)
 }
