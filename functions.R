@@ -10,7 +10,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # if you want to change default na.strings of fread, consider using formals
 # also check column names and print groups if not all same or all different
 # ------------------------------------------------------------------------------
-wdread <- function(pattern, func = "fread", bind = TRUE){
+wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
@@ -20,26 +20,46 @@ wdread <- function(pattern, func = "fread", bind = TRUE){
   # return if only one data is read
   if (length(data) == 1){return(data[[1]])}
   
-  # check column names
-  cols <- lapply(data, function(x) paste(sort(names(x)), collapse = ",..,"))
-  cols.unique <- unique(cols)
-  if (length(cols.unique) != 1 & length(cols.unique) != length(cols)){
-    cat("\n", length(cols.unique), "sets of column names among", length(cols) , 
-        "files found. Showing groups... \n")
-    group <- lapply(cols.unique, function(x) which(cols == x))
-    print(lapply(group, function(x) files[x]))
-  }else if(length(cols.unique) == length(cols)){cat("No data sets share common columns. \n")}
+  # get column class
+  cols <- lapply(data, function(x){
+    temp.col <- lapply(x, class)
+    temp.col <- temp.col[order(names(temp.col))]
+  })
   
-  if (length(cols.unique) == 1 & bind == TRUE){
+  # get column names and unique names
+  cols.names <- lapply(cols, names)
+  cols.unique.names <- unique(cols.names)
+  # get column types
+  cols.types <- lapply(cols, unname)
+  
+  if (between(length(cols.unique.names), 1, length(cols), incbounds = FALSE)){
+    cat("\n", length(cols.unique.names), "sets of column names among", length(cols) , 
+        "files found. Showing groups... \n")
+    
+    group <- lapply(cols.unique.names, function(x) lapply(cols.names, function(y) identical(x,y)))
+    print(lapply(group, function(x) files[unlist(x)]))
+  
+    }else if(length(cols.unique.names) == length(cols)){cat("No data sets share common columns. \n")}
+  
+  # bind if names are the same
+  if (length(cols.unique.names) == 1 & bind == TRUE){
+    if (force64 == TRUE){
+      cat("Forcing int64 columns to be chr \n")
+      lapply(1:length(data), function(i){
+        int64 <- names(which(cols[[i]] == "integer64"))
+        data[[i]] <<- data[[i]] %>%
+          mutate_at(int64, ~as.character(.x))
+      })
+    }
+    
     tryCatch(
       {data <- rbindlist(data, use.names = TRUE)
       }, error = function(e){
-        cat(e, "Column names are all the same, but are columns of the same type?", 
-            "Set bind = FALSE or read separately.")}
+        cat(e, "Check column types. Perhaps set force64 = TRUE")
+        }
     )}
   return(data)
 }
-
 # ------------------------------------------------------------------------------
 # Coalesce join
 # ------------------------------------------------------------------------------
