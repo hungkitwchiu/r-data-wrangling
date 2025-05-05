@@ -11,7 +11,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # also check column names and print groups if not all same or all different
 # if force64 = TRUE, all integer64 columns are coerced into character
 # ------------------------------------------------------------------------------
-wdread <- function(pattern, func = "fread", bind = TRUE, force64 = TRUE){
+wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
