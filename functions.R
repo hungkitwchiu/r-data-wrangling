@@ -11,7 +11,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # also check column names and print groups if not all same or all different
 # if force64 = TRUE, all integer64 columns are coerced into character
 # ------------------------------------------------------------------------------
-wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
+wdread <- function(pattern, func = "fread", bind = TRUE, force64 = TRUE){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
@@ -42,17 +42,17 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
     
   }else if(length(cols.unique.names) == length(cols)){cat("No data sets share common columns. \n")}
   
+  if (force64 == TRUE){
+    cat("Forcing int64 columns to be chr \n")
+    lapply(1:length(data), function(i){
+      int64 <- names(which(cols[[i]] == "integer64"))
+      data[[i]] <<- data[[i]] %>%
+        mutate_at(int64, ~as.character(.x))
+    })
+  }
+  
   # bind if names are the same
   if (length(cols.unique.names) == 1 & bind == TRUE){
-    if (force64 == TRUE){
-      cat("Forcing int64 columns to be chr \n")
-      lapply(1:length(data), function(i){
-        int64 <- names(which(cols[[i]] == "integer64"))
-        data[[i]] <<- data[[i]] %>%
-          mutate_at(int64, ~as.character(.x))
-      })
-    }
-    
     tryCatch(
       {data <- rbindlist(data, use.names = TRUE)
       }, error = function(e){cat(e, "Check column types. Perhaps set force64 = TRUE")}
