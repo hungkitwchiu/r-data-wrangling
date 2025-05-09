@@ -1,7 +1,7 @@
 # r-data-wrangling
 Functions that I use across all prrojects, to call, <br />
 ```r
-source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/refs/heads/main/functions.R")
+source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/functions.R")
 ```
 ## Tips on making your code run faster
 -  Use `data.table` instead of `data.frame`
