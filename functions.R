@@ -15,7 +15,6 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
-    # developing, code left this way for now
     if (str_detect(x, ".RData$")){ get(load(x)) }else{ get(func)(x)}
   })
   
