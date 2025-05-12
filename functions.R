@@ -40,7 +40,8 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
     group <- lapply(cols.unique.names, function(x) lapply(cols.names, function(y) identical(x,y)))
     print(lapply(group, function(x) files[unlist(x)]))
     
-  }else if(length(cols.unique.names) == length(cols)){cat("No data sets share common columns. \n")}
+  }else if(length(cols.unique.names) == length(cols) & length(cols) > 1){
+    cat("No data sets share common columns. \n")}
   
   if (force64 == TRUE){
     cat("Forcing int64 columns to be chr \n")
