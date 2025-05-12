@@ -16,7 +16,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
     # developing, code left this way for now
-    if (str_detect(x, ".RData$"){ func = "load" }
+    if (str_detect(x, ".RData$")){ func = "load" }
     if (func == "load"){get(get(func)(x))}else{get(func)(x)}
   })
   
