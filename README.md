@@ -10,4 +10,6 @@ source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/fun
 
 -  Use parallelization, in particular, if `lapply` works, `parallel::parLapplyLB` probably also works (be aware of overheads)
 
--  When using parallelization inside a function, export the necessary variables to the clusters via `clusterExport`; be aware that each variable exported will add to the overheads.
+-  When parallelizing inside a function, export the necessary variables via `clusterExport`; be aware that each variable exported will add to the overheads
+
+-  Use `distinct`, `unique` and `factor` when appropriate, never repeat anything if once is enough
