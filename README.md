@@ -12,4 +12,4 @@ source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/fun
 
 -  When parallelizing inside a function, export the necessary variables via `clusterExport`; be aware that each variable exported will add to the overheads
 
--  Use `distinct`, `unique` and `factor` when appropriate, never repeat anything if once is enough
+-  Use `distinct`, `unique` and `factor` whenever appropriate, never repeat anything if once is enough
