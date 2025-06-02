@@ -4,7 +4,7 @@
 pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 
 # ------------------------------------------------------------------------------
-# Read file using pattern in directory recursively, default fread
+# Read file using pattern or exact path in directory recursively, default fread
 # pattern can be a character vector with multiple elements
 # return list if multiple files are read, otherwise return single data.table
 # if you want to change default na.strings of fread, consider using formals
@@ -12,10 +12,13 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # if force64 = TRUE, all integer64 columns are coerced into character
 # ------------------------------------------------------------------------------
 wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
-  files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
+  if (is_scalar_character(pattern)){ # string type case
+    files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
+  }else if(is.character(pattern)){files = pattern} # character vector type case
+  
   data <- lapply(files, function(x){
-    cat("Reading...", x, "\n")
-    if (str_detect(x, ".RData$")){ get(load(x)) }else{ get(func)(x)}
+  cat("Reading...", x, "\n")
+  if (str_detect(x, ".RData$")){ get(load(x)) }else{ get(func)(x)}
   })
   
   # return if only one data is read
@@ -60,6 +63,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
     )}
   return(data)
 }
+                 
 # ------------------------------------------------------------------------------
 # Coalesce join
 # ------------------------------------------------------------------------------
