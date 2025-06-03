@@ -20,17 +20,25 @@ source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/fun
 
 ## Parallelization
 
-| Package/Approach         | Syntax Style     | Backend           |  Ease of Use  | Notes                       |
-| ------------------------ | ---------------- | ----------------- |  -----------  | --------------------------- |
-| `furrr`                  | `map()` style    | `future`          |  ✅          | Best for tidyverse users    |
-| `foreach` + `doParallel` | for-loop style   | `parallel`/`snow` |  🟡          | Good control, verbose       |
-| `parallel::parLapply`    | `lapply()` style | `parallel`        |  🟡          | Built into base R           |
-| `future.apply`           | `apply()` style  | `future`          |  ✅          | Drop-in for `apply()` funcs |
+| Package/Approach         | Syntax Style     | Backend           | Notes                       |
+| ------------------------ | ---------------- | ----------------- | --------------------------- |
+| `furrr`                  | `map()` style    | `future`          | Best for tidyverse users    |
+| `foreach` + `doParallel` | for-loop style   | `parallel`/`snow` | Good control, verbose       |
+| `parallel::parLapply`    | `lapply()` style | `parallel`        | Built into base R           |
+| `future.apply`           | `apply()` style  | `future`          | Drop-in for `apply()` funcs |
 
--  `furrr`:
+-  `furrr`: built on top of future, supports multisession, multicore, clusters, etc.
 
 ```{r}
 library(furrr)
-plan(multisession)  # Or multicore, etc.
+plan(multisession)  # use multisession on Windows
 result <- future_map(my_list, slow_function)
+```
+
+-  `parallel::parLapply`: base `R` only, no other dependencies
+
+```{r}
+cl <- makeCluster(4)
+result <- parLapply(cl, my_list, slow_function)
+stopCluster(cl)
 ```
