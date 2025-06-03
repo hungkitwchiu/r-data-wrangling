@@ -34,7 +34,6 @@ source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/fun
 library(furrr)
 plan(multisession, workers = availableCores()-2)  # use multisession on Windows
 
-
 with_progress({
   p <- progressor(steps = length(my.list))
   result <- future_map(my.list, ~{
