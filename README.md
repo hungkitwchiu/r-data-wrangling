@@ -10,10 +10,27 @@ source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/fun
 
 -  Use `lapply` instead of for loops (or any kinds of loops)
 
--  Use parallelization, in particular, if `lapply` works, `parallel::parLapplyLB` probably also works (be aware of overheads)
+-  Use parallelization, for example, if `lapply` works, `parallel::parLapplyLB` probably also works (be aware of overheads)
 
 -  When parallelizing inside a function, export the necessary variables via `clusterExport`; be aware that each variable exported will add to the overheads
 
 -  Use `distinct`, `unique` and `factor` whenever appropriate, never repeat anything if once is enough
 
 -  Use `Rcpp` to embed `C++` code
+
+## Parallelization
+
+| Package/Approach         | Syntax Style     | Backend           |  Ease of Use  | Notes                       |
+| ------------------------ | ---------------- | ----------------- |  -----------  | --------------------------- |
+| `furrr`                  | `map()` style    | `future`          |  ✅          | Best for tidyverse users    |
+| `foreach` + `doParallel` | for-loop style   | `parallel`/`snow` |  🟡          | Good control, verbose       |
+| `parallel::parLapply`    | `lapply()` style | `parallel`        |  🟡          | Built into base R           |
+| `future.apply`           | `apply()` style  | `future`          |  ✅          | Drop-in for `apply()` funcs |
+
+-  `furrr`:
+
+```{r}
+library(furrr)
+plan(multisession)  # Or multicore, etc.
+result <- future_map(my_list, slow_function)
+```
