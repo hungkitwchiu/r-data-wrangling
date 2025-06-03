@@ -27,6 +27,7 @@ source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/fun
 | `parallel::parLapply`    | `lapply()` style | `parallel`        | Built into base R           |
 | `future.apply`           | `apply()` style  | `future`          | Drop-in for `apply()` funcs |
 
+
 -  `furrr`: built on top of future, supports multisession, multicore, clusters, etc.
 
 ```{r}
