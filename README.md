@@ -36,10 +36,27 @@ plan(multisession)  # use multisession on Windows
 result <- future_map(my_list, slow_function)
 ```
 
+-  `foreach` + `doParallel`: verbose but very customizable (e.g., chunk sizes, error handling)
+
+```{r}
+library(foreach)
+library(doParallel)
+registerDoParallel(cores = 4)
+result <- foreach(i = 1:10) %dopar% { slow_function(i) }
+```
+
 -  `parallel::parLapply`: base `R` only, no other dependencies
 
 ```{r}
 cl <- makeCluster(4)
 result <- parLapply(cl, my_list, slow_function)
 stopCluster(cl)
+```
+
+-  `future.apply`: drop in `future_lapply()` instead of `lapply()`, with same arguments
+
+```{r}
+library(future.apply)
+plan(multicore)
+result <- future_lapply(my_list, slow_function)
 ```
