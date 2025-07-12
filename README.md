@@ -1,5 +1,5 @@
 # r-data-wrangling
-Functions that I use across all prrojects, to call, <br />
+Functions that I use across all prrojects, <br />
 ```r
 source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/functions.R")
 ```
