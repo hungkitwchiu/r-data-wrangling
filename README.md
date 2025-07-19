@@ -3,7 +3,7 @@ Functions that I use across all prrojects, <br />
 ```r
 source("https://raw.githubusercontent.com/hungkitwchiu/r-data-wrangling/main/functions.R")
 ```
-## Write faster code
+## Writing faster code
 -  Both Python and R are primarily single-core language, shop for CPUs that have strong single core performance
 
 -  Use `data.table` instead of `data.frame`
