@@ -12,9 +12,9 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # if force64 = TRUE, all integer64 columns are coerced into character
 # ------------------------------------------------------------------------------
 wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
-  if (is_scalar_character(pattern)){ # string type case
+  if (is_scalar_character(pattern)){ # character string case
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
-  }else if(is.character(pattern)){files = pattern} # character vector type case
+  }else if(is.character(pattern)){files = pattern} # character vector case
   
   data <- lapply(files, function(x){
   cat("Reading...", x, "\n")
