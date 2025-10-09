@@ -119,14 +119,12 @@ coalesce.join <- function(data.list, id, arrange.col = NULL, co.names = NULL,
 # ------------------------------------------------------------------------------
 mapview.with.shape.data <- function(data.interest, data.shape, var.interest, 
                                     link.interest, link.shape, layer.name = NULL,
-                                    at = NULL, col.regions = NULL, zlim = NULL, 
                                     return = FALSE){
   if (is.null(layer.name)){layer.name = var.interest}
   temp <- data.shape %>%
     right_join(data.interest %>% dplyr::select(eval(link.interest), eval(var.interest)), 
                by = join_by(!!link.shape == !!rlang::sym(link.interest)))
-  m <- mapview(temp, zcol = var.interest, layer.name = layer.name, at = at, 
-               col.regions = col.regions, zlim = zlim)
+  m <- mapview(temp, zcol = var.interest, layer.name = layer.name)
   if (return){return(m)} else {m}
 }
 
