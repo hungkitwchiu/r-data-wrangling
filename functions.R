@@ -11,6 +11,8 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # also check column names and print groups if not all same or all different
 # if force64 = TRUE, all integer64 columns are coerced into character
 # ------------------------------------------------------------------------------
+
+# to do: modify function to accept RData of one or MORE objects
 wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   if (is_scalar_character(pattern)){ # character string case, find files using pattern
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
