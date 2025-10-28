@@ -155,3 +155,120 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
   gg
   return(gg)
 }
+
+# ------------------------------------------------------------------------------
+# Difference-in-difference functions
+# ------------------------------------------------------------------------------
+
+get.SA <- function(SA.fit){
+  SA <- SA.fit %>% 
+  mutate(t =  as.double(gsub(".*::", "", term)),
+         conf.low = estimate - (qnorm(0.975)*std.error),
+         conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
+  select(t, estimate, conf.low, conf.high) %>% 
+  mutate(method = "Sun & Abraham")
+  return(SA)
+}
+
+# did by Callaway and Sant'Ana
+get.CSA <- function(yname, tname, idname, gname, data, clustervars = NULL){
+  set.seed(123)
+  csa.est <- att_gt(yname = yname,
+             tname= tname,
+             idname = idname,
+             gname = gname,
+             clustervars = clustervars,
+             data = data)
+
+  csa.agg <- aggte(csa.est, type = "dynamic", na.rm = TRUE)
+
+  CSA <-  csa.agg %>% 
+    tidy() %>% 
+    rename(t = event.time) %>% 
+    select(t, estimate, conf.low, conf.high) %>% 
+    mutate(method = "Callaway & Sant’Anna")
+
+  return(CSA)
+}
+
+get.CD <- function(df, outcome, group, time, treatment, effects, placebo, cluster = NULL){
+  chaisemartin <- did_multiplegt_dyn(
+      df = df,
+      outcome = outcome,
+      group = group,
+      time = time,
+      treatment = "treat",
+      effects = effects,
+      placebo = placebo,
+      cluster = cluster,
+      graph_off = TRUE
+)
+  # print(summary(chaisemartin))
+  CD.placebos <- chaisemartin[["results"]][["Placebos"]] %>% 
+    cbind(t = seq(from = -1, to = -nrow(.), by = -1))
+  
+  CD.effects <- chaisemartin[["results"]][["Effects"]] %>% 
+    cbind(t = seq(from = 0, to = nrow(.)-1))
+    
+  CD <- rbind(CD.placebos, CD.effects) %>%
+    as.data.frame() %>%
+    rename(c(estimate = Estimate, conf.low = `LB CI`, conf.high = `UB CI`)) %>%
+    select(t, estimate, conf.low, conf.high) %>% 
+    mutate(method = "Chaisemartin & D'Haultfoeuille") %>%
+    arrange(t)
+  
+  row.names(CD) <- NULL
+  return(CD)
+}
+
+get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
+  did_imp <- did_imputation(data = data, yname = yname, gname = gname,
+                          tname = tname, idname = idname, 
+                          cluster_var = cluster_var,
+                          horizon = TRUE, pretrends = TRUE) 
+  BJS <- did_imp %>% 
+    select(t = term, estimate, std.error) %>%
+    mutate(
+      conf.low = estimate - 1.96 * std.error,
+      conf.high = estimate + 1.96 * std.error,
+      t = as.numeric(t)
+    ) %>%
+    mutate(method = "Borusyak") %>% 
+    select(c(t, estimate, conf.low, conf.high, method))
+  return(BJS)
+}
+
+get.GAR <- function(GAR.fit){
+  GAR <- GAR.fit %>% 
+  mutate(t =  as.double(gsub(".*::", "", term)),
+         conf.low = estimate - (qnorm(0.975)*std.error),
+         conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
+  select(t, estimate, conf.low, conf.high) %>% 
+  mutate(method = "Gardner")
+  
+  return(GAR)
+}
+
+plot.did <- function(coefs, pre = -5, post = 10, title.alt = NULL){
+  if (is.null(title.alt)){
+    title = "Event Time Estimates"
+  }else{
+    title = paste("Event Time Estimates -", title.alt)
+  }
+  
+  coefs <- coefs %>% filter(!is.na(estimate)) %>%
+    filter(t >= pre & t <= post)
+  
+  plot <- coefs %>% 
+    ggplot(aes(x = t, y = estimate, color = method)) + 
+    geom_point(aes(x = t, y = estimate), position = position_dodge2(width = 0.8), size = 1) +
+    geom_linerange(aes(x = t, ymin = conf.low, ymax = conf.high), position = position_dodge2(width = 0.8), size = 0.75) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red", size = .25, alpha = 0.75) + 
+    geom_vline(xintercept = -0.5, linetype = "dashed", size = .25) +
+    scale_color_manual(name="Method", values= met.brewer("Cross", 5, "discrete")) +
+    theme_clean() + theme(legend.position= 'bottom') +
+    labs(title = title, y = "ATT", x = "Relative Time") + 
+    guides(col = guide_legend(nrow = ceiling(length(unique(coefs$method))/2))) 
+  
+  return(plot)
+}
