@@ -160,13 +160,19 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
 # Difference-in-difference functions
 # ------------------------------------------------------------------------------
 
-get.SA <- function(SA.fit){
+get.SA <- function(yname, tname, idname, gname, data){
+  formula <- as.formula(paste0(yname, " ~ ", "sunab(", gname, ", ", tname, ") | ", 
+                             idname, "+", tname))
+
+  SA.fit <-  data %>% 
+    do(broom::tidy(feols(formula, data = .)))
+  
   SA <- SA.fit %>% 
-  mutate(t =  as.double(gsub(".*::", "", term)),
-         conf.low = estimate - (qnorm(0.975)*std.error),
-         conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
-  select(t, estimate, conf.low, conf.high) %>% 
-  mutate(method = "Sun & Abraham")
+    mutate(t =  as.double(gsub(".*::", "", term)),
+           conf.low = estimate - (qnorm(0.975)*std.error),
+           conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
+    select(t, estimate, conf.low, conf.high) %>% 
+    mutate(method = "Sun & Abraham")
   return(SA)
 }
 
