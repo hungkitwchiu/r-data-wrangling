@@ -243,13 +243,13 @@ get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
   return(BJS)
 }
 
-get.GAR <- function(yname, tname, idname, reltname, treatment, data, cluster = NULL){
+get.GAR <- function(yname, tname, idname, reltname, treatment, data, cluster_var = NULL){
   GAR.fit <- data %>%
     do(broom::tidy(did2s(data = ., yname = yname,
                          first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
                          second_stage = as.formula(paste0("~ i(", reltname, ", ref = Inf)")), 
                          treatment = treatment,
-                         cluster = cluster)))
+                         cluster_var = cluster_var)))
   GAR <- GAR.fit %>% 
     mutate(t =  as.double(gsub(".*::", "", term)),
            conf.low = estimate - (qnorm(0.975)*std.error),
