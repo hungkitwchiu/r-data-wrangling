@@ -160,14 +160,12 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
 # Difference-in-difference functions
 # ------------------------------------------------------------------------------
 
-get.SA <- function(yname, tname, idname, gname, data){
+get.SA <- function(yname, tname, idname, gname, data, cluster = NULL){
   formula <- as.formula(paste0(yname, " ~ ", "sunab(", gname, ", ", tname, ") | ", 
-                             idname, "+", tname))
+                             idname, "+", tname, ", cluster = ~", cluster))
 
-  SA.fit <-  data %>% 
-    do(broom::tidy(feols(formula, data = .)))
-  
-  SA <- SA.fit %>% 
+  SA <-  data %>% 
+    do(broom::tidy(feols(formula, data = .))) %>% 
     mutate(t =  as.double(gsub(".*::", "", term)),
            conf.low = estimate - (qnorm(0.975)*std.error),
            conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
@@ -244,16 +242,23 @@ get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
   return(BJS)
 }
 
-get.GAR <- function(GAR.fit){
+get.GAR <- function(yname, tname, idname, reltname, treatment, cluster = NULL){
+  GAR.fit <- data %>%
+    do(broom::tidy(did2s(data = ., yname = yname,
+                         first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
+                         second_stage = as.formula(paste0("~ i(", reltname, ", ref = Inf)")), 
+                         treatment = treatment,
+                         cluster_var = cluster)))
   GAR <- GAR.fit %>% 
-  mutate(t =  as.double(gsub(".*::", "", term)),
-         conf.low = estimate - (qnorm(0.975)*std.error),
-         conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
-  select(t, estimate, conf.low, conf.high) %>% 
-  mutate(method = "Gardner")
+    mutate(t =  as.double(gsub(".*::", "", term)),
+           conf.low = estimate - (qnorm(0.975)*std.error),
+           conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
+    select(t, estimate, conf.low, conf.high) %>% 
+    mutate(method = "Gardner")
   
   return(GAR)
 }
+
 
 plot.did <- function(coefs, pre = -5, post = 10, title.alt = NULL){
   if (is.null(title.alt)){
