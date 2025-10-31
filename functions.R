@@ -162,11 +162,10 @@ show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.m
 
 get.SA <- function(yname, tname, idname, gname, data, cluster = NULL){
   formula <- as.formula(paste0(
-    yname, " ~ ", "sunab(", gname, ", ", tname, ") | ", idname, "+", tname, 
-    if_else(is.null(cluster), "", paste0("cluster ~ ", cluster))))
+    yname, " ~ ", "sunab(", gname, ", ", tname, ") | ", idname, " + ", tname))
 
   SA <-  data %>% 
-    do(broom::tidy(feols(formula, data = .))) %>% 
+    do(broom::tidy(feols(formula, data = ., cluster = cluster))) %>% 
     mutate(t =  as.double(gsub(".*::", "", term)),
            conf.low = estimate - (qnorm(0.975)*std.error),
            conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
