@@ -242,7 +242,7 @@ get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
   return(BJS)
 }
 
-get.GAR <- function(yname, tname, idname, reltname, treatment, cluster = NULL){
+get.GAR <- function(yname, tname, idname, reltname, treatment, data, cluster = NULL){
   GAR.fit <- data %>%
     do(broom::tidy(did2s(data = ., yname = yname,
                          first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
