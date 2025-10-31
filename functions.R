@@ -259,7 +259,6 @@ get.GAR <- function(yname, tname, idname, reltname, treatment, data, cluster = N
   return(GAR)
 }
 
-
 plot.did <- function(coefs, pre = -5, post = 10, title.alt = NULL){
   if (is.null(title.alt)){
     title = "Event Time Estimates"
