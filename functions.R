@@ -243,11 +243,12 @@ get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
   return(BJS)
 }
 
-get.GAR <- function(yname, tname, idname, reltname, treatment, data, cluster_var = NULL){
+get.GAR <- function(yname, tname, idname, reltname, treatment, ref, data, cluster_var = NULL){
+  # set up ref of relative year to Inf for event study
   GAR.fit <- data %>%
     do(broom::tidy(did2s(data = ., yname = yname,
                          first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
-                         second_stage = as.formula(paste0("~ i(", reltname, ", ref = Inf)")), 
+                         second_stage = as.formula(paste0("~ i(", reltname, ", ref =", ref, ")")), 
                          treatment = treatment,
                          cluster_var = cluster_var)))
   GAR <- GAR.fit %>% 
