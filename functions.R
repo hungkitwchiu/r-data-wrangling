@@ -249,7 +249,7 @@ get.GAR <- function(yname, tname, idname, reltname, treatment, data, cluster = N
                          first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
                          second_stage = as.formula(paste0("~ i(", reltname, ", ref = Inf)")), 
                          treatment = treatment,
-                         cluster_var = cluster)))
+                         cluster = cluster)))
   GAR <- GAR.fit %>% 
     mutate(t =  as.double(gsub(".*::", "", term)),
            conf.low = estimate - (qnorm(0.975)*std.error),
