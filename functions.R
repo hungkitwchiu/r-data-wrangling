@@ -131,32 +131,6 @@ mapview.with.shape.data <- function(data.interest, data.shape, var.interest,
 }
 
 # ------------------------------------------------------------------------------
-# did plot, currently with 1 treatment and 1 control
-# ------------------------------------------------------------------------------
-show.did.plot = function(gdat, x.name, y.name, t.name, vlines, show.means, pos.means = NULL){
-  gdat <- gdat %>% dplyr::mutate(group = if_else(!!sym(t.name) == 0, "Control", "Treatment"))
-  gg = ggplot(gdat, aes(y = get(y.name), x = get(x.name), color = group)) +
-    geom_line() + 
-    theme_bw() +
-    labs(x = tools::toTitleCase(x.name), y = tools::toTitleCase(y.name), color = "Group")
-  
-  for (vline in vlines){gg = gg + geom_vline(xintercept = vline)}
-  
-  if(show.means) {
-    exps <- sort(unique(gdat$exp))
-    treats <- sort(unique(gdat$treat))
-    for (exp in exps){
-      for (treat in treats){
-        y.label <- mean(unlist(filter(gdat, treat==!!treat, exp==!!exp)[, y.name])) %>% round(3)
-        gg = gg + annotate("label", x=pos.means[exp+1], y=y.label*1.01, label=y.label)
-      }
-    }
-  }
-  gg
-  return(gg)
-}
-
-# ------------------------------------------------------------------------------
 # Difference-in-difference functions
 # ------------------------------------------------------------------------------
 
