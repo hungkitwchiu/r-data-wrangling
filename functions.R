@@ -182,7 +182,8 @@ get.CSA <- function(yname, tname, idname, gname, data, clustervars = NULL){
              idname = idname,
              gname = gname,
              clustervars = clustervars,
-             data = data)
+             data = data,
+             control_group = c("nevertreated", "notyettreated"))
 
   csa.agg <- aggte(csa.est, type = "dynamic", na.rm = TRUE)
 
