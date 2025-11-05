@@ -204,12 +204,61 @@ get.GAR <- function(yname, tname, idname, reltname, treatment, ref, data, cluste
   return(GAR)
 }
 
-plot.did <- function(coefs, pre = -5, post = 10, title.alt = NULL){
-  if (is.null(title.alt)){
-    title = "Event Time Estimates"
-  }else{
-    title = paste("Event Time Estimates -", title.alt)
+plot.did <- function(did.list, pre = -5, post = 10, title.alt = NULL){
+  if (is.null(title.alt)){title = "Event Time Estimates"
+  }else{title = paste("Event Time Estimates -", title.alt)}
+  
+  # verify did.list
+  if (!all(names(did.list) %in% c("CSA", "CD", "SA", "BJS", "GAR"))){
+    stop(paste("Check naming of list of did objects \n", 
+             "Must be one of CSA, CD, SA, BJS, GAR"))
   }
+  
+  coefs <- NULL
+  
+  # get CSA coefficients
+  CSA.plot <- aggte(did.list[["CSA"]], type = "dynamic", na.rm = TRUE) %>%
+    tidy() %>%
+    rename(t = event.time) %>%
+    select(t, estimate, conf.low, conf.high) %>%
+    mutate(method = "Callaway & Sant’Anna")
+  
+  coefs <- rbind(coefs, CSA.plot)
+  
+  # get CD coefficients
+  CD.placebos <- did.list[["CD"]][["results"]][["Placebos"]] %>% 
+    cbind(t = seq(from = -1, to = -nrow(.), by = -1))
+  CD.effects <- did.list[["CD"]][["results"]][["Effects"]] %>% 
+    cbind(t = seq(from = 0, to = nrow(.)-1))
+  CD.plot <- rbind(CD.placebos, CD.effects) %>%
+    as.data.frame() %>%
+    rename(c(estimate = Estimate, conf.low = `LB CI`, conf.high = `UB CI`)) %>%
+    select(t, estimate, conf.low, conf.high) %>% 
+    mutate(method = "Chaisemartin & D'Haultfoeuille") %>%
+    arrange(t)
+  row.names(CD.plot) <- NULL
+  
+  coefs <- rbind(coefs, CD.plot)
+  
+  # get SA coefficients
+  
+  coefs <- rbind(coefs, did.list[["SA"]])
+  
+  # get BJS coefficients
+  
+  BJS.plot <- did.list[["BJS"]] %>% 
+    select(t = term, estimate, std.error) %>%
+    mutate(conf.low = estimate - 1.96 * std.error,
+           conf.high = estimate + 1.96 * std.error,
+           t = as.numeric(t),
+           method = "Borusyak") %>% 
+    select(c(t, estimate, conf.low, conf.high, method))
+  
+  coefs <- rbind(coefs, BJS.plot)
+  
+  # get GAR coefficients
+  
+  coefs <- rbind(coefs, did.list[["GAR"]])
   
   coefs <- coefs %>% filter(!is.na(estimate)) %>%
     filter(t >= pre & t <= post)
@@ -218,8 +267,8 @@ plot.did <- function(coefs, pre = -5, post = 10, title.alt = NULL){
     ggplot(aes(x = t, y = estimate, color = method)) + 
     geom_point(aes(x = t, y = estimate), position = position_dodge2(width = 0.8), size = 1) +
     geom_linerange(aes(x = t, ymin = conf.low, ymax = conf.high), position = position_dodge2(width = 0.8), size = 0.75) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "red", size = .25, alpha = 0.75) + 
-    geom_vline(xintercept = -0.5, linetype = "dashed", size = .25) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "red", linewidth = .25, alpha = 0.75) + 
+    geom_vline(xintercept = -0.5, linetype = "dashed", linewidth = .25) +
     scale_color_manual(name="Method", values= met.brewer("Cross", 5, "discrete")) +
     theme_clean() + theme(legend.position= 'bottom') +
     labs(title = title, y = "ATT", x = "Relative Time") + 
