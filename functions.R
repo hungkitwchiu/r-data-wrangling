@@ -151,7 +151,7 @@ get.SA <- function(yname, tname, idname, gname, data, cluster = NULL){
 # did by Callaway and Sant'Ana
 get.CSA <- function(yname, tname, idname, gname, data, clustervars = NULL){
   set.seed(123)
-  csa.est <- att_gt(yname = yname,
+  CSA <- att_gt(yname = yname,
              tname= tname,
              idname = idname,
              gname = gname,
@@ -160,19 +160,11 @@ get.CSA <- function(yname, tname, idname, gname, data, clustervars = NULL){
              control_group = c("nevertreated", "notyettreated"),
              cores = detectCores()-2)
 
-  csa.agg <- aggte(csa.est, type = "dynamic", na.rm = TRUE)
-
-  CSA <-  csa.agg %>% 
-    tidy() %>% 
-    rename(t = event.time) %>% 
-    select(t, estimate, conf.low, conf.high) %>% 
-    mutate(method = "Callaway & Sant’Anna")
-
   return(CSA)
 }
 
 get.CD <- function(df, outcome, group, time, treatment, effects, placebo, cluster = NULL){
-  chaisemartin <- did_multiplegt_dyn(
+  CD <- did_multiplegt_dyn(
       df = df,
       outcome = outcome,
       group = group,
@@ -183,21 +175,6 @@ get.CD <- function(df, outcome, group, time, treatment, effects, placebo, cluste
       cluster = cluster,
       graph_off = TRUE
 )
-  # print(summary(chaisemartin))
-  CD.placebos <- chaisemartin[["results"]][["Placebos"]] %>% 
-    cbind(t = seq(from = -1, to = -nrow(.), by = -1))
-  
-  CD.effects <- chaisemartin[["results"]][["Effects"]] %>% 
-    cbind(t = seq(from = 0, to = nrow(.)-1))
-    
-  CD <- rbind(CD.placebos, CD.effects) %>%
-    as.data.frame() %>%
-    rename(c(estimate = Estimate, conf.low = `LB CI`, conf.high = `UB CI`)) %>%
-    select(t, estimate, conf.low, conf.high) %>% 
-    mutate(method = "Chaisemartin & D'Haultfoeuille") %>%
-    arrange(t)
-  
-  row.names(CD) <- NULL
   return(CD)
 }
 
@@ -206,16 +183,7 @@ get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
                           tname = tname, idname = idname, 
                           cluster_var = cluster_var,
                           horizon = TRUE, pretrends = TRUE) 
-  BJS <- did_imp %>% 
-    select(t = term, estimate, std.error) %>%
-    mutate(
-      conf.low = estimate - 1.96 * std.error,
-      conf.high = estimate + 1.96 * std.error,
-      t = as.numeric(t)
-    ) %>%
-    mutate(method = "Borusyak") %>% 
-    select(c(t, estimate, conf.low, conf.high, method))
-  return(BJS)
+  return(did_imp)
 }
 
 get.GAR <- function(yname, tname, idname, reltname, treatment, ref, data, cluster_var = NULL){
