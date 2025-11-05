@@ -138,13 +138,7 @@ get.SA <- function(yname, tname, idname, gname, data, cluster = NULL){
   formula <- as.formula(paste0(
     yname, " ~ ", "sunab(", gname, ", ", tname, ") | ", idname, " + ", tname))
 
-  SA <-  data %>% 
-    do(broom::tidy(feols(formula, data = ., cluster = cluster))) %>% 
-    mutate(t =  as.double(gsub(".*::", "", term)),
-           conf.low = estimate - (qnorm(0.975)*std.error),
-           conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
-    select(t, estimate, conf.low, conf.high) %>% 
-    mutate(method = "Sun & Abraham")
+  SA <- feols(formula, data = data, cluster = cluster)
   return(SA)
 }
 
@@ -188,19 +182,10 @@ get.BJS <- function(yname, tname, idname, gname, data, cluster_var = NULL){
 
 get.GAR <- function(yname, tname, idname, reltname, treatment, ref, data, cluster_var = NULL){
   # set up ref of relative year to Inf for event study
-  GAR.fit <- data %>%
-    do(broom::tidy(did2s(data = ., yname = yname,
-                         first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
-                         second_stage = as.formula(paste0("~ i(", reltname, ", ref =", ref, ")")), 
-                         treatment = treatment,
-                         cluster_var = cluster_var)))
-  GAR <- GAR.fit %>% 
-    mutate(t =  as.double(gsub(".*::", "", term)),
-           conf.low = estimate - (qnorm(0.975)*std.error),
-           conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
-    select(t, estimate, conf.low, conf.high) %>% 
-    mutate(method = "Gardner")
-  
+  GAR <- did2s(data = data, yname = yname, 
+                   first_stage = as.formula(paste0("~ 0 | ", idname, " + ", tname)),
+                   second_stage = as.formula(paste0("~ i(", reltname, ", ref =", ref, ")")), 
+                   treatment = treatment, cluster_var = cluster_var)
   return(GAR)
 }
 
@@ -211,54 +196,70 @@ plot.did <- function(did.list, pre = -5, post = 10, title.alt = NULL){
   # verify did.list
   if (!all(names(did.list) %in% c("CSA", "CD", "SA", "BJS", "GAR"))){
     stop(paste("Check naming of list of did objects \n", 
-             "Must be one of CSA, CD, SA, BJS, GAR"))
-  }
+               "Must be one of CSA, CD, SA, BJS, GAR"))}
   
   coefs <- NULL
   
   # get CSA coefficients
-  CSA.plot <- aggte(did.list[["CSA"]], type = "dynamic", na.rm = TRUE) %>%
-    tidy() %>%
-    rename(t = event.time) %>%
-    select(t, estimate, conf.low, conf.high) %>%
-    mutate(method = "Callaway & Sant’Anna")
+  if (!is.null(did.list[["CSA"]])){
+    CSA.plot <- aggte(did.list[["CSA"]], type = "dynamic", na.rm = TRUE) %>%
+      tidy() %>%
+      rename(t = event.time) %>%
+      select(t, estimate, conf.low, conf.high) %>%
+      mutate(method = "Callaway & Sant’Anna")
+    coefs <- rbind(coefs, CSA.plot)
+  }
   
-  coefs <- rbind(coefs, CSA.plot)
   
   # get CD coefficients
-  CD.placebos <- did.list[["CD"]][["results"]][["Placebos"]] %>% 
-    cbind(t = seq(from = -1, to = -nrow(.), by = -1))
-  CD.effects <- did.list[["CD"]][["results"]][["Effects"]] %>% 
-    cbind(t = seq(from = 0, to = nrow(.)-1))
-  CD.plot <- rbind(CD.placebos, CD.effects) %>%
-    as.data.frame() %>%
-    rename(c(estimate = Estimate, conf.low = `LB CI`, conf.high = `UB CI`)) %>%
-    select(t, estimate, conf.low, conf.high) %>% 
-    mutate(method = "Chaisemartin & D'Haultfoeuille") %>%
-    arrange(t)
-  row.names(CD.plot) <- NULL
-  
-  coefs <- rbind(coefs, CD.plot)
+  if (!is.null(did.list[["CD"]])){
+    CD.placebos <- did.list[["CD"]][["results"]][["Placebos"]] %>% 
+      cbind(t = seq(from = -1, to = -nrow(.), by = -1))
+    CD.effects <- did.list[["CD"]][["results"]][["Effects"]] %>% 
+      cbind(t = seq(from = 0, to = nrow(.)-1))
+    CD.plot <- rbind(CD.placebos, CD.effects) %>%
+      as.data.frame() %>%
+      rename(c(estimate = Estimate, conf.low = `LB CI`, conf.high = `UB CI`)) %>%
+      select(t, estimate, conf.low, conf.high) %>% 
+      mutate(method = "Chaisemartin & D'Haultfoeuille") %>%
+      arrange(t)
+    row.names(CD.plot) <- NULL
+    coefs <- rbind(coefs, CD.plot)
+  }
   
   # get SA coefficients
-  
-  coefs <- rbind(coefs, did.list[["SA"]])
+  if (!is.null(did.list[["SA"]])){
+    SA.plot <- broom::tidy(did.list[["SA"]]) %>%
+      mutate(t =  as.double(gsub(".*::", "", term)),
+             conf.low = estimate - (qnorm(0.975)*std.error),
+             conf.high = estimate + (qnorm(0.975)*std.error)) %>%
+      select(t, estimate, conf.low, conf.high) %>%
+      mutate(method = "Sun & Abraham")
+    coefs <- rbind(coefs, SA.plot)
+  }
   
   # get BJS coefficients
-  
-  BJS.plot <- did.list[["BJS"]] %>% 
-    select(t = term, estimate, std.error) %>%
-    mutate(conf.low = estimate - 1.96 * std.error,
-           conf.high = estimate + 1.96 * std.error,
-           t = as.numeric(t),
-           method = "Borusyak") %>% 
-    select(c(t, estimate, conf.low, conf.high, method))
-  
-  coefs <- rbind(coefs, BJS.plot)
+  if (!is.null(did.list[["BJS"]])){
+    BJS.plot <- did.list[["BJS"]] %>% 
+      select(t = term, estimate, std.error) %>%
+      mutate(conf.low = estimate - 1.96 * std.error,
+             conf.high = estimate + 1.96 * std.error,
+             t = as.numeric(t),
+             method = "Borusyak") %>% 
+      select(c(t, estimate, conf.low, conf.high, method))
+    coefs <- rbind(coefs, BJS.plot)
+  }
   
   # get GAR coefficients
-  
-  coefs <- rbind(coefs, did.list[["GAR"]])
+  if (!is.null(did.list[["GAR"]])){
+    GAR.plot <- broom::tidy(did.list[["GAR"]]) %>% 
+      mutate(t =  as.double(gsub(".*::", "", term)),
+             conf.low = estimate - (qnorm(0.975)*std.error),
+             conf.high = estimate + (qnorm(0.975)*std.error)) %>% 
+      select(t, estimate, conf.low, conf.high) %>% 
+      mutate(method = "Gardner")
+    coefs <- rbind(coefs, GAR.plot)
+  }
   
   coefs <- coefs %>% filter(!is.na(estimate)) %>%
     filter(t >= pre & t <= post)
