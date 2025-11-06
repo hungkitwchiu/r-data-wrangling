@@ -13,8 +13,9 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # ------------------------------------------------------------------------------
 
 # to do: modify function to accept RData of one or MORE objects
-formals(fread)$na.strings <- na.strings
+
 wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
+  formals(fread)$na.strings <- na.strings
   if (is_scalar_character(pattern)){ # character string case, find files using pattern
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   }else if(is.character(pattern)){files = pattern} # character vector case
