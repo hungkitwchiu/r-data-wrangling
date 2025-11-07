@@ -8,7 +8,7 @@ pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 # ------------------------------------------------------------------------------
 load.RData <- function(fileName){
   #loads an RData file, and returns it
-  load(list.files(pattern = filename, recursive = TRUE))
+  load(list.files(pattern = fileName, recursive = TRUE))
   get(ls()[ls() != "fileName"])
 }
 
