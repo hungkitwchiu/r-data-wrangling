@@ -4,6 +4,15 @@
 pacman::p_load("readxl","data.table","purrr","stringr","dplyr","tidyverse")
 
 # ------------------------------------------------------------------------------
+# load r data file into an object
+# ------------------------------------------------------------------------------
+load.RData <- function(fileName){
+  #loads an RData file, and returns it
+  load(fileName)
+  get(ls()[ls() != "fileName"])
+}
+
+# ------------------------------------------------------------------------------
 # Read file using pattern or exact path in directory recursively, default fread
 # pattern can be a character vector with multiple elements
 # return list if multiple files are read, otherwise return single data.table
