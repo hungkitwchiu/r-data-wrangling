@@ -72,6 +72,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
     })
   }
 
+  # use with CAUTION
   if (forceDate == TRUE){
     lapply(1:length(data), function(i){
       date.cols <- names(which(sapply(cols[[i]], function(x){
