@@ -58,7 +58,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
           length(cols), "files found. Showing groups... \n")
       group <- lapply(check[[2]], function(x) lapply(check[[1]], function(y) identical(x,y)))
       print(lapply(group, function(x) files[unlist(x)]))
-    }else if(length(check) == length(cols) & length(cols) > 1){
+    }else if(length(check[[2]]) == length(cols) & length(cols) > 1){
       cat("No data sets share common column", check[[3]], ". \n",
           "If seeing different column types, check if force64 = TRUE will help \n")}
   }
