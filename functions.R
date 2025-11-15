@@ -23,14 +23,15 @@ load.RData <- function(fileName){
 
 # to do: modify function to accept RData of one or MORE objects
 
-wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
+wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE, 
+                   forceDate = FALSE){
   if (is_scalar_character(pattern)){ # character string case, find files using pattern
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   }else if(is.character(pattern)){files = pattern} # character vector case
   
   data <- lapply(files, function(x){
-  cat("Reading...", x, "\n")
-  if (str_detect(x, ".RData$")){ get(load(x)) }else{ get(func)(x) }
+    cat("Reading...", x, "\n")
+    if (str_detect(x, ".RData$")){ get(load(x)) }else{ get(func)(x) }
   })
   
   # return if only one data is read
@@ -47,17 +48,21 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
   cols.unique.names <- unique(cols.names)
   # get column types
   cols.types <- lapply(cols, unname)
+  cols.unique.types <- unique(cols.types)
+  #print(deparse(substitute(cols.unique.names)))
   
-  if (between(length(cols.unique.names), 1, length(cols), incbounds = FALSE)){
-    cat("\n", length(cols.unique.names), "sets of column names among", length(cols) , 
-        "files found. Showing groups... \n")
-    
-    group <- lapply(cols.unique.names, function(x) lapply(cols.names, function(y) identical(x,y)))
-    print(lapply(group, function(x) files[unlist(x)]))
-    
-  }else if(length(cols.unique.names) == length(cols) & length(cols) > 1){
-    cat("No data sets share common columns. \n")}
-  
+  for (check in list(list(cols.names, cols.unique.names, "names"), 
+                     list(cols.types, cols.unique.types, "column types"))){
+    if (between(length(check[[2]]), 1, length(cols), incbounds = FALSE)){
+      cat("\n", length(check[[2]]), "sets of unique", check[[3]], "among", 
+          length(cols), "files found. Showing groups... \n")
+      group <- lapply(check[[2]], function(x) lapply(check[[1]], function(y) identical(x,y)))
+      print(lapply(group, function(x) files[unlist(x)]))
+    }else if(length(check) == length(cols) & length(cols) > 1){
+      cat("No data sets share common column", check[[3]], ". \n",
+          "If seeing different column types, check if force64 = TRUE will help \n")}
+  }
+
   if (force64 == TRUE){
     cat("Forcing int64 columns to be chr \n")
     lapply(1:length(data), function(i){
@@ -66,12 +71,25 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE){
         mutate_at(int64, ~as.character(.x))
     })
   }
+
+  if (forceDate == TRUE){
+    lapply(1:length(data), function(i){
+      date.cols <- names(which(sapply(cols[[i]], function(x){
+        any(c("IDate", "Date", "POSIXct", "POSIXt") %in% x)
+      })))
+      if (length(date.cols > 1)){
+        cat("Forcing", date.cols, "to be chr \n")
+        data[[i]] <<- data[[i]] %>%
+          mutate_at(date.cols, ~as.character(.x))
+      }
+    })
+  }
   
   # bind if names are the same
   if (length(cols.unique.names) == 1 & bind == TRUE){
     tryCatch(
       {data <- rbindlist(data, use.names = TRUE)
-      }, error = function(e){cat(e, "Check column types. Perhaps set force64 = TRUE")}
+      }, error = function(e){message(conditionMessage(e))}
     )}
   return(data)
 }
