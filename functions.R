@@ -300,7 +300,7 @@ plot.did <- function(did.list, pre = -5, post = 10, title.alt = NULL){
     geom_hline(yintercept = 0, linetype = "dashed", color = "red", linewidth = .25, alpha = 0.75) + 
     geom_vline(xintercept = -0.5, linetype = "dashed", linewidth = .25) +
     scale_color_manual(name="Method", values= met.brewer("Cross", 5, "discrete")) +
-    theme_clean() + theme(legend.position= 'bottom') +
+    theme_calc(base_size = 9) + theme(legend.position='bottom') +
     labs(title = title, y = "ATT", x = "Relative Time") + 
     guides(col = guide_legend(nrow = ceiling(length(unique(coefs$method))/2))) 
   
