@@ -301,8 +301,8 @@ plot.did <- function(did.list, pre = -5, post = 10, title.alt = NULL){
     geom_vline(xintercept = -0.5, linetype = "dashed", linewidth = .25) +
     scale_color_manual(name="Method", values= met.brewer("Cross", 5, "discrete")) +
     theme_calc(base_size = 9) + 
-    theme(legend.position='bottom', 
-          plot.background = element_rect(fill = "transparent", colour = NA)) +
+    theme(legend.position='bottom',
+          panel.background = element_rect(fill = "transparent")) +
     labs(title = title, y = "ATT", x = "Relative Time") + 
     guides(col = guide_legend(nrow = ceiling(length(unique(coefs$method))/2))) 
   
