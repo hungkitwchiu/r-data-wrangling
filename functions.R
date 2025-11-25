@@ -43,6 +43,8 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
     temp.col <- temp.col[order(names(temp.col))]
   })
   
+  if (bind == FALSE){ return(data) }
+  
   # get column names and unique names
   cols.names <- lapply(cols, names)
   cols.unique.names <- unique(cols.names)
@@ -87,7 +89,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
   }
   
   # bind if names are the same
-  if (length(cols.unique.names) == 1 & bind == TRUE){
+  if (length(cols.unique.names) == 1){
     tryCatch(
       {data <- rbindlist(data, use.names = TRUE)
       }, error = function(e){message(conditionMessage(e))}
