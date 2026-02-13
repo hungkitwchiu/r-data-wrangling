@@ -30,7 +30,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
   }else if(is.character(pattern)){
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
-    } # character vector case
+  } # character vector case
   
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
@@ -58,7 +58,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
   
   for (check in list(list(cols.names, cols.unique.names, "names"), 
                      list(cols.types, cols.unique.types, "column types"))){
-    if (between(length(check[[2]]), 1, length(cols), incbounds = FALSE)){
+    if (data.table::between(length(check[[2]]), 1, length(cols), incbounds = FALSE)){
       cat("\n", length(check[[2]]), "sets of unique", check[[3]], "among", 
           length(cols), "files found. Showing groups... \n")
       group <- lapply(check[[2]], function(x) lapply(check[[1]], function(y) identical(x,y)))
