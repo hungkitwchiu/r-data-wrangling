@@ -26,8 +26,11 @@ load.RData <- function(fileName){
 wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE, 
                    forceDate = FALSE){
   if (is_scalar_character(pattern)){ # character string case, find files using pattern
+    # logic is the same for the two cases, something could be wrong
     files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
-  }else if(is.character(pattern)){files = pattern} # character vector case
+  }else if(is.character(pattern)){
+    files <- unlist(lapply(pattern, function(x){list.files(pattern = x, recursive = TRUE)}))
+    } # character vector case
   
   data <- lapply(files, function(x){
     cat("Reading...", x, "\n")
@@ -64,7 +67,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
       cat("No data sets share common column", check[[3]], ". \n",
           "If seeing different column types, check if force64 = TRUE will help \n")}
   }
-
+  
   if (force64 == TRUE){
     cat("Forcing int64 columns to be chr \n")
     lapply(1:length(data), function(i){
@@ -73,7 +76,7 @@ wdread <- function(pattern, func = "fread", bind = TRUE, force64 = FALSE,
         mutate_at(int64, ~as.character(.x))
     })
   }
-
+  
   # use with CAUTION
   if (forceDate == TRUE){
     lapply(1:length(data), function(i){
