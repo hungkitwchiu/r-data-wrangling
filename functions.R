@@ -13,7 +13,8 @@ load.RData <- function(fileName){
 }
 
 # ------------------------------------------------------------------------------
-# Read file using pattern or exact path in directory recursively, default fread
+# Read file using pattern or exact path in directory recursively, 
+# default reading function is fread, it could also be read_rds
 # pattern can be a character vector with multiple elements
 # return list if multiple files are read, otherwise return single data.table
 # if you want to change default na.strings of fread, consider using formals
